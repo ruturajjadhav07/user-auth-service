@@ -10,4 +10,6 @@ import ruturaj.authentication.entity.UserEntity;
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
     Optional<UserEntity> findByEmail(String email);
+
+    Boolean existsByEmail(String email);
 }

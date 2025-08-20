@@ -2,7 +2,9 @@ package ruturaj.authentication.service;
 
 import java.util.UUID;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import lombok.RequiredArgsConstructor;
 import ruturaj.authentication.entity.UserEntity;
@@ -26,8 +28,12 @@ public class ProfileServiceImplementation implements ProfileService {
     public profileResponse createProfile(profileRequest request) {
         // request DTO
         UserEntity newProfile = convertToUserEntity(request);
-        newProfile = userRepository.save(newProfile);
-        return convertToProfileResponse(newProfile);
+        if (!userRepository.existsByEmail(request.getEmail())) {
+            // check email is already registered or not
+            newProfile = userRepository.save(newProfile);
+            return convertToProfileResponse(newProfile);
+        }
+        throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already Exists");
     }
 
     // Converts a UserEntity object (from DB) into a profileResponse (to be sent to

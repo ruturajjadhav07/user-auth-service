@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import ruturaj.authentication.io.profileRequest;
 import ruturaj.authentication.io.profileResponse;
@@ -23,7 +24,7 @@ public class ProfileController {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public profileResponse register(@RequestBody profileRequest request) {
+    public profileResponse register(@Valid @RequestBody profileRequest request) {
         profileResponse response = profileService.createProfile(request);
         // sending welcome email
         return response;
