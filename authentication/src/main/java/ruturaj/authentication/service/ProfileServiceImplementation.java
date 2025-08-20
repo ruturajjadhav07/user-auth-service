@@ -3,6 +3,7 @@ package ruturaj.authentication.service;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -17,6 +18,8 @@ import ruturaj.authentication.repository.UserRepository;
 public class ProfileServiceImplementation implements ProfileService {
 
     private final UserRepository userRepository;
+
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * This method creates a new user profile.
@@ -56,7 +59,7 @@ public class ProfileServiceImplementation implements ProfileService {
                 .userId(UUID.randomUUID()
                         .toString())
                 .name(request.getName())
-                .password(request.getPassword())
+                .password(passwordEncoder.encode(request.getPassword()))
                 .isAccountVerified(false)
                 .resetOtpExpireAt(0L)
                 .verifyOtp(null)
