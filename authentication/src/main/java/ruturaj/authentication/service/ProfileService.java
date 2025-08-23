@@ -5,4 +5,6 @@ import ruturaj.authentication.io.profileResponse;
 
 public interface ProfileService {
     profileResponse createProfile(profileRequest request);
+
+    profileResponse getProfile(String email);
 }

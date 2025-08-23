@@ -3,6 +3,7 @@ package ruturaj.authentication.service;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -37,6 +38,15 @@ public class ProfileServiceImplementation implements ProfileService {
             return convertToProfileResponse(newProfile);
         }
         throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already Exists");
+    }
+
+    // get profile
+    @Override
+    public profileResponse getProfile(String email) {
+        UserEntity existingUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        // once we get existing user we need to call convertTouser method
+        return convertToProfileResponse(existingUser);
     }
 
     // Converts a UserEntity object (from DB) into a profileResponse (to be sent to

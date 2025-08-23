@@ -15,12 +15,14 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
 import lombok.RequiredArgsConstructor;
+import ruturaj.authentication.filter.JwtRequestFilter;
 import ruturaj.authentication.service.AppUserDetailService;
 
 @Configuration
@@ -30,6 +32,10 @@ public class SecurityConfig {
 
     private final AppUserDetailService appUserDetailService;
 
+    private final JwtRequestFilter JwtRequestFilter;
+
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.cors(Customizer.withDefaults())
@@ -38,7 +44,16 @@ public class SecurityConfig {
                         .requestMatchers("/login", "/register", "/send-reset-otp", "/reset-password", "/logout")
                         .permitAll().anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .logout(AbstractHttpConfigurer::disable);
+                .logout(AbstractHttpConfigurer::disable)
+                .addFilterBefore(JwtRequestFilter, UsernamePasswordAuthenticationFilter.class) // whenever request is
+                                                                                               // made after login it
+                                                                                               // will check for token
+                                                                                               // from header if not
+                                                                                               // then will chec k in
+                                                                                               // cookie
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(customAuthenticationEntryPoint)); // to check
+                                                                                                       // unauthorized
+                                                                                                       // user
 
         return httpSecurity.build();
     }
