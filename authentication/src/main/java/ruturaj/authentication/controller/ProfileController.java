@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import ruturaj.authentication.io.profileRequest;
 import ruturaj.authentication.io.profileResponse;
+import ruturaj.authentication.service.EmailService;
 import ruturaj.authentication.service.ProfileService;
 
 @RestController
@@ -21,11 +22,13 @@ public class ProfileController {
 
     private final ProfileService profileService;
 
+    private final EmailService emailService;
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public profileResponse register(@Valid @RequestBody profileRequest request) {
         profileResponse response = profileService.createProfile(request);
         // sending welcome email
+        emailService.sendWelcome(response.getEmail(), response.getName());
         return response;
     }
 
@@ -42,4 +45,7 @@ public class ProfileController {
         return profileService.getProfile(email);
 
     }
+
+
+
 }

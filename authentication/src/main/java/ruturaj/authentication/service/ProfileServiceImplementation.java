@@ -1,6 +1,7 @@
 package ruturaj.authentication.service;
 
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -21,6 +22,8 @@ public class ProfileServiceImplementation implements ProfileService {
     private final UserRepository userRepository;
 
     private final PasswordEncoder passwordEncoder;
+
+    private final EmailService emailService;
 
     /**
      * This method creates a new user profile.
@@ -47,6 +50,31 @@ public class ProfileServiceImplementation implements ProfileService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         // once we get existing user we need to call convertTouser method
         return convertToProfileResponse(existingUser);
+    }
+
+    // send reset otp
+    @Override
+    public void sendResetOtp(String email) {
+        UserEntity existingEntity = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found " + email));
+
+        // generating otp
+        String otp = String.valueOf(ThreadLocalRandom.current().nextInt(100000, 1000000));
+        // calculate expiry time (i.e. current time + 15 minutes in milliseconds)
+        long expiry = System.currentTimeMillis() + (15 * 10 * 1000);
+
+        existingEntity.setResetOtp(otp);
+        existingEntity.setResetOtpExpireAt(expiry);
+
+        // save to database
+        userRepository.save(existingEntity);
+
+        try {
+            // send reset otp email
+            emailService.sendResetOtpEmail(existingEntity.getEmail(), otp);
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to send email");
+        }
     }
 
     // Converts a UserEntity object (from DB) into a profileResponse (to be sent to
