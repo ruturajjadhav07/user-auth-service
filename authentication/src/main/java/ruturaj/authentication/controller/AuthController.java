@@ -22,9 +22,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import ruturaj.authentication.io.AuthRequest;
 import ruturaj.authentication.io.AuthResponse;
+import ruturaj.authentication.io.ResetPasswordRequest;
 import ruturaj.authentication.service.AppUserDetailService;
 import ruturaj.authentication.service.ProfileService;
 import ruturaj.authentication.util.JwtUtil;
@@ -90,10 +92,21 @@ public class AuthController {
         return ResponseEntity.ok(email != null);
     }
 
+    // send reset otp
     @PostMapping("/send-reset-otp")
     public void sendResetOtp(@RequestParam String email) {
         try {
             profileService.sendResetOtp(email);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    // reset password
+    @PostMapping("/reset-password")
+    public void resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        try {
+            profileService.resetPassword(request.getEmail(), request.getOtp(), request.getNewPassword());
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }

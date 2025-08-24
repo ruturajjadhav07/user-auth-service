@@ -55,26 +55,50 @@ public class ProfileServiceImplementation implements ProfileService {
     // send reset otp
     @Override
     public void sendResetOtp(String email) {
-        UserEntity existingEntity = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found " + email));
+        UserEntity existingUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
 
         // generating otp
         String otp = String.valueOf(ThreadLocalRandom.current().nextInt(100000, 1000000));
         // calculate expiry time (i.e. current time + 15 minutes in milliseconds)
         long expiry = System.currentTimeMillis() + (15 * 10 * 1000);
 
-        existingEntity.setResetOtp(otp);
-        existingEntity.setResetOtpExpireAt(expiry);
+        existingUser.setResetOtp(otp);
+        existingUser.setResetOtpExpireAt(expiry);
 
         // save to database
-        userRepository.save(existingEntity);
+        userRepository.save(existingUser);
 
         try {
             // send reset otp email
-            emailService.sendResetOtpEmail(existingEntity.getEmail(), otp);
+            emailService.sendResetOtpEmail(existingUser.getEmail(), otp);
         } catch (Exception e) {
             throw new RuntimeException("Unable to send email");
         }
+    }
+
+    // reset password
+    @Override
+    public void resetPassword(String email, String otp, String newPassword) {
+        UserEntity existingUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
+
+        // to check otp
+        if (existingUser.getResetOtp() == null || !existingUser.getResetOtp().equals(otp)) {
+            throw new RuntimeException("Invalid OTP");
+        }
+
+        // check otp expiration time
+        if (existingUser.getResetOtpExpireAt() < System.currentTimeMillis()) {
+            throw new RuntimeException("Otp expired");
+        }
+
+        // set password
+        existingUser.setPassword(passwordEncoder.encode(newPassword));
+        existingUser.setResetOtp(null);
+        existingUser.setResetOtpExpireAt(0L);
+
+        userRepository.save(existingUser);
     }
 
     // Converts a UserEntity object (from DB) into a profileResponse (to be sent to
