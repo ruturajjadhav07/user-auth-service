@@ -35,4 +35,14 @@ public class EmailService {
         message.setText("Otp for resetting password is " + otp);
         mailSender.send(message);
     }
+
+    // send verify otp for email and use this in profileserviceimpl method
+    public void sendOtpEmail(String toEmail, String otp) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(fromEmail);
+        message.setTo(toEmail);
+        message.setSubject("Email verification OTP");
+        message.setText("Your OTP for email verification is " + otp);
+        mailSender.send(message);
+    }
 }

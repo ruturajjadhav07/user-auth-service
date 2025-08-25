@@ -4,7 +4,6 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -107,6 +106,34 @@ public class AuthController {
     public void resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         try {
             profileService.resetPassword(request.getEmail(), request.getOtp(), request.getNewPassword());
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    // send verify otp for email
+    @PostMapping("/send-otp")
+    public void sendVerifyOtp(@CurrentSecurityContext(expression = "authentication?.name") String email) {
+        try {
+            profileService.sendOtp(email);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    // verify email using otp
+    @PostMapping("/verify-otp")
+    public void verifyOtp(@CurrentSecurityContext(expression = "authentication?.name") String email,
+            @RequestBody Map<String, Object> request) {
+        // we should not send otp in path varaible or request param because otp is
+        // sensitive info thats why we added map
+
+        if (request.get("otp").toString() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing details");
+        }
+ 
+        try {
+            profileService.verifyOtp(email, request.get("otp").toString());
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }

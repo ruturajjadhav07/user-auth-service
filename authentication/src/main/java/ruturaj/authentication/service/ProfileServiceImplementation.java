@@ -101,6 +101,67 @@ public class ProfileServiceImplementation implements ProfileService {
         userRepository.save(existingUser);
     }
 
+    // 2 send otp for verify email when user is logged in
+    @Override
+    public void sendOtp(String email) {
+        UserEntity existingUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
+
+        if (existingUser.getIsAccountVerified() != null && existingUser.getIsAccountVerified()) {
+            return;
+        }
+
+        // if not verified then generate otp
+        // generating otp
+        String otp = String.valueOf(ThreadLocalRandom.current().nextInt(100000, 1000000));
+        // calculate expiry time (i.e. current time + 24 hours in milliseconds)
+        long expiry = System.currentTimeMillis() + (24 * 60 * 60 * 1000);
+
+        // update usr ENtity
+        existingUser.setVerifyOtp(otp);
+        existingUser.setVerifyOtpExpireAt(expiry);
+
+        // save to db
+        userRepository.save(existingUser);
+        try {
+            emailService.sendOtpEmail(existingUser.getEmail(), otp);
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to send email");
+        }
+    }
+
+    // 3 verify otp for email verification
+    @Override
+    public void verifyOtp(String email, String otp) {
+        UserEntity existingUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
+
+        if (existingUser.getVerifyOtp() == null || !existingUser.getVerifyOtp().equals(otp)) {
+            throw new RuntimeException("Invalid OTP");
+        }
+
+        if (existingUser.getVerifyOtpExpireAt() < System.currentTimeMillis()) {
+            throw new RuntimeException("OTP Expired");
+        }
+
+        existingUser.setIsAccountVerified(true);
+        existingUser.setVerifyOtp(null);
+        existingUser.setVerifyOtpExpireAt(0L);
+
+        userRepository.save(existingUser);
+    }
+
+    // // 1 get details of logged in user for sending otp
+    // @Override
+    // public String getLoggedInUserId(String email) {
+    // // get loggedIn userId
+    // UserEntity existingUser = userRepository.findByEmail(email)
+    // .orElseThrow(() -> new UsernameNotFoundException("User not found: " +
+    // email));
+
+    // return existingUser.getUserId();
+    // }
+
     // Converts a UserEntity object (from DB) into a profileResponse (to be sent to
     // the client)
     private profileResponse convertToProfileResponse(UserEntity newProfile) {
