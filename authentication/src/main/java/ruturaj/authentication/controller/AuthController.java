@@ -131,7 +131,7 @@ public class AuthController {
         if (request.get("otp").toString() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing details");
         }
- 
+
         try {
             profileService.verifyOtp(email, request.get("otp").toString());
         } catch (Exception e) {
