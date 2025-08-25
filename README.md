@@ -62,8 +62,8 @@ Supports user registration, login, password encryption, JWT-based authentication
 
 ### 1️⃣ Clone the repository
 ```bash
-git clone https://github.com/your-username/secure-auth-api.git
-cd secure-auth-api
+git clone https://github.com/ruturajjadhav07/user-auth-service.git
+cd user-auth-service
 ```
 ### 2️⃣ Configure Database
 ```bash
