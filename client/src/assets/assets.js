@@ -1,5 +1,4 @@
-import shield from "../assets/shield.png";
-
+import shield from "./shield.png"
 export const assets = {
   shield,
 };
