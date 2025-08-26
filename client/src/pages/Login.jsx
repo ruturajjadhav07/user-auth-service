@@ -1,9 +1,60 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { assets } from "../assets/assets";
-import { Link, Links } from "react-router-dom";
+import { Link, Links, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { toast } from "react-toastify";
+import AppContext from "../context/AppContext";
 
 const Login = () => {
   const [isCreatedAccount, setIsCreatedAccount] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const { backendURL, setIsLoggedIn, getUserData } = useContext(AppContext);
+
+  const navigate = useNavigate();
+
+  // submit form
+  const onSubmitHandler = async (e) => {
+    e.preventDefault();
+    axios.defaults.withCredentials = true;
+    setLoading(true);
+    try {
+      if (isCreatedAccount) {
+        // make a call to register api
+        const response = await axios.post(`${backendURL}/register`, {
+          name,
+          email,
+          password,
+        });
+        if (response.status === 201) {
+          navigate("/");
+          getUserData(); //when logged in it will call getUserData and will make api call and retrive user details
+          toast.success("Account created Successfully");
+        } else {
+          toast.error("Email already exists");
+        }
+      } else {
+        // login api
+        const response = await axios.post(`${backendURL}/login`, {
+          email,
+          password,
+        });
+        if (response.status == 200) {
+          setIsLoggedIn(true);
+          navigate("/");
+        } else {
+          toast.error("Email or Password is incorrect");
+        }
+      }
+    } catch (err) {
+      toast.error(err.response.data.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div
@@ -44,7 +95,7 @@ const Login = () => {
         <h2 className="text-center mb-4">
           {isCreatedAccount ? "Create Account" : "Login"}
         </h2>
-        <form>
+        <form onSubmit={onSubmitHandler}>
           {isCreatedAccount && (
             <div className="mb-3">
               <label htmlFor="fullName" className="form-label">
@@ -56,6 +107,8 @@ const Login = () => {
                 className="form-control"
                 placeholder="Enter Full Name"
                 required
+                onChange={(e) => setName(e.target.value)}
+                value={name}
               />
             </div>
           )}
@@ -69,6 +122,8 @@ const Login = () => {
               className="form-control"
               placeholder="example@email.com"
               required
+              onChange={(e) => setEmail(e.target.value)}
+              value={email}
             />
           </div>
           <div className="mb-3">
@@ -81,6 +136,8 @@ const Login = () => {
               className="form-control"
               placeholder="******"
               required
+              onChange={(e) => setPassword(e.target.value)}
+              value={password}
             />
           </div>
           <div className="d-flex justify-content-between mb-3">
@@ -89,8 +146,13 @@ const Login = () => {
               Forgot Password
             </Link>
           </div>
-          <button className="btn btn-primary w-100" type="submit">
-            {isCreatedAccount ? "Sign Up" : "Login"}
+          <button
+            className="btn btn-primary w-100"
+            type="submit"
+            disabled={loading}
+          >
+            {/* {isCreatedAccount ? "Sign Up" : "Login"} */}
+            {loading ? "Loading..." : isCreatedAccount ? "Sign Up" : "Login"}
           </button>
         </form>
 
