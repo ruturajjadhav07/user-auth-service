@@ -1,6 +1,9 @@
+import { useContext } from "react";
 import { assets } from "../assets/assets";
+import AppContext from "../context/AppContext";
 
 const Header = () => {
+  const { userData } = useContext(AppContext);
   return (
     <div
       className="text-center d-flex flex-column align-items-center justify-content-center py-5 px-3"
@@ -9,7 +12,7 @@ const Header = () => {
       <img src={assets.shield} alt="header" width={120} className="mb-4" />
 
       <h5 className="fw-semibold">
-        Hey Dev's{" "}
+        Hey {userData ? userData.name : "Developer"}
         <span role="img" aria-label="wave">
           {" "}
           👋{" "}

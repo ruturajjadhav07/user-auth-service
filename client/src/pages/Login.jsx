@@ -44,6 +44,7 @@ const Login = () => {
         });
         if (response.status == 200) {
           setIsLoggedIn(true);
+          getUserData();
           navigate("/");
         } else {
           toast.error("Email or Password is incorrect");

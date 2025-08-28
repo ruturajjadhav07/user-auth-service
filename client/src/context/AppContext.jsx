@@ -1,16 +1,3 @@
-// import { createContext } from "react";
-
-// export default AppContext = createContext();
-
-// export const AppContextProvider = (props) => {
-//   const contextValue = {};
-//   return (
-//     <AppContext.Provider value={contextValue}>
-//       {props.children}
-//     </AppContext.Provider>
-//   );
-// };
-
 import { createContext, useState } from "react";
 import { AppConsonants } from "../util/constant";
 import axios from "axios";
